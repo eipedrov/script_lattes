@@ -8,7 +8,7 @@ class SalvadorDadosLattes:
 
     def salvar_como_json(self, caminho_arquivo: str) -> None:
         try:
-            with open(caminho_arquivo, 'w', encoding='utf-8') as f:
+            with open(caminho_arquivo + '.json', 'w', encoding='utf-8') as f:
                 json.dump(self.dados, f, ensure_ascii=False, indent=4)
             print(f"Dados salvos com sucesso em {caminho_arquivo}")
         except IOError as e:
@@ -16,7 +16,7 @@ class SalvadorDadosLattes:
 
     def salvar_como_csv(self, caminho_arquivo: str) -> None:
         try:
-            with open(caminho_arquivo, 'w', newline='', encoding='utf-8') as f:
+            with open(caminho_arquivo + '.csv', 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 for key, value in self.dados.items():
                     writer.writerow([key, value])

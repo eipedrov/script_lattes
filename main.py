@@ -1,6 +1,6 @@
-from curriculoLattes import CurriculoLattes
-from processador_xml_lattes import ProcessadorXmlLattes
-from salvador_dados_lattes import salvadorDadosLattes
+import sys
+from processadorXmlLattes import ProcessadorXmlLattes
+from salvadorDadosLattes import SalvadorDadosLattes
 
 def main(caminho_xml, formato_saida, caminho_saida):
     try:
