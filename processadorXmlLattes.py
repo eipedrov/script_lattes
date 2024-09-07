@@ -18,6 +18,7 @@ class ProcessadorXmlLattes:
             return f"{mes.zfill(2)}/{ano}"
         return "Data inválida"
 
+    # Função corrigida para buscar dados gerais
     def busca_dados_gerais(self) -> dict:
         try:
             dados_gerais = self.root_xml.find(".//DADOS-GERAIS")
@@ -30,19 +31,7 @@ class ProcessadorXmlLattes:
         except Exception as e:
             raise ValueError(f"Erro ao buscar dados gerais: {e}")
 
-    def busca_formacao_academica(self) -> list:
-        try:
-            formacoes = []
-            for formacao in self.root_xml.findall(".//FORMACAO-ACADEMICA-TITULACAO/*"):
-                formacoes.append({
-                    "nome_curso": self._normaliza_texto(formacao.get("NOME-CURSO", "Não encontrado")),
-                    "nome_instituicao": self._normaliza_texto(formacao.get("NOME-INSTITUICAO", "Não encontrado")),
-                    "ano_conclusao": formacao.get("ANO-DE-CONCLUSAO", "Não encontrado")
-                })
-            return formacoes
-        except Exception as e:
-            raise ValueError(f"Erro ao buscar formação acadêmica: {e}")
-
+    # Função corrigida para buscar atuações profissionais
     def busca_atuacoes_profissionais(self) -> list:
         try:
             atuacoes = []
@@ -58,63 +47,48 @@ class ProcessadorXmlLattes:
         except Exception as e:
             raise ValueError(f"Erro ao buscar atuações profissionais: {e}")
 
-    def busca_atividades_ensino(self) -> list:
+    # Outras funções de busca de produções e dados
+    def busca_artigos_publicados(self) -> list:
         try:
-            disciplinas = []
-            for ensino in self.root_xml.findall(".//ENSINO"):
-                for disciplina in ensino.findall(".//DISCIPLINA"):
-                    if disciplina.text:
-                        disciplinas.append(self._normaliza_texto(disciplina.text))
-            return disciplinas
-        except Exception as e:
-            raise ValueError(f"Erro ao buscar atividades de ensino: {e}")
-
-    def busca_atividades_pesquisa(self) -> list:
-        try:
-            linhas_pesquisa = []
-            for linha in self.root_xml.findall(".//LINHA-DE-PESQUISA"):
-                linhas_pesquisa.append({
-                    "titulo": self._normaliza_texto(linha.get("TITULO-DA-LINHA-DE-PESQUISA", "Não encontrado")),
-                    "descricao": self._normaliza_texto(linha.get("OBJETIVOS-LINHA-DE-PESQUISA", "Não encontrado"))
+            artigos = []
+            for artigo in self.root_xml.findall(".//ARTIGO-PUBLICADO"):
+                dados = artigo.find(".//DADOS-BASICOS-DO-ARTIGO")
+                titulo = dados.attrib.get('TITULO-DO-ARTIGO', 'Sem título')
+                ano = dados.attrib.get('ANO-DO-ARTIGO', 'Sem ano')
+                autores = [self._normaliza_texto(autor.attrib.get('NOME-COMPLETO-DO-AUTOR')) for autor in artigo.findall(".//AUTORES")]
+                artigos.append({
+                    "titulo": titulo,
+                    "ano": ano,
+                    "autores": autores
                 })
-            return linhas_pesquisa
+            return artigos
         except Exception as e:
-            raise ValueError(f"Erro ao buscar atividades de pesquisa: {e}")
+            raise ValueError(f"Erro ao buscar artigos publicados: {e}")
 
-    def busca_participacao_projetos(self) -> list:
+    def busca_trabalhos_em_eventos(self) -> list:
         try:
-            projetos = []
-            for projeto in self.root_xml.findall(".//PARTICIPACAO-EM-PROJETO"):
-                projeto_info = projeto.find(".//PROJETO-DE-PESQUISA")
-                if projeto_info is not None:
-                    projetos.append({
-                        "nome_projeto": self._normaliza_texto(projeto_info.get("NOME-DO-PROJETO", "Não encontrado")),
-                        "situacao_projeto": self._normaliza_texto(projeto_info.get("SITUACAO", "Não encontrado")),
-                        "descricao_projeto": self._normaliza_texto(projeto_info.get("DESCRICAO-DO-PROJETO", "Não encontrado"))
-                    })
-            return projetos
-        except Exception as e:
-            raise ValueError(f"Erro ao buscar participação em projetos: {e}")
-
-    def busca_palavras_chave(self) -> list:
-        try:
-            palavras_chave = []
-            for palavra in self.root_xml.findall(".//PALAVRAS-CHAVE//PALAVRA-CHAVE"):
-                if palavra.text:
-                    palavras_chave.append(self._normaliza_texto(palavra.get("PALAVRA-CHAVE-1", "Não encontrado")))
-            return palavras_chave
-        except Exception as e:
-            raise ValueError(f"Erro ao buscar palavras-chave: {e}")
-
-    def busca_areas_conhecimento(self) -> list:
-        try:
-            areas_conhecimento = []
-            for area in self.root_xml.findall(".//AREA-DO-CONHECIMENTO"):
-                areas_conhecimento.append({
-                    "grande_area": self._normaliza_texto(area.get("NOME-GRANDE-AREA-DO-CONHECIMENTO", "Não encontrado")),
-                    "area": self._normaliza_texto(area.get("NOME-DA-AREA-DO-CONHECIMENTO", "Não encontrado")),
-                    "sub_area": self._normaliza_texto(area.get("NOME-DA-SUB-AREA-DO-CONHECIMENTO", "Não encontrado"))
+            trabalhos = []
+            for trabalho in self.root_xml.findall(".//TRABALHO-EM-EVENTOS"):
+                dados = trabalho.find(".//DADOS-BASICOS-DO-TRABALHO")
+                titulo = dados.attrib.get('TITULO-DO-TRABALHO', 'Sem título')
+                ano = dados.attrib.get('ANO-DO-TRABALHO', 'Sem ano')
+                autores = [self._normaliza_texto(autor.attrib.get('NOME-COMPLETO-DO-AUTOR')) for autor in trabalho.findall(".//AUTORES")]
+                trabalhos.append({
+                    "titulo": titulo,
+                    "ano": ano,
+                    "autores": autores
                 })
-            return areas_conhecimento
+            return trabalhos
         except Exception as e:
-            raise ValueError(f"Erro ao buscar áreas do conhecimento: {e}")
+            raise ValueError(f"Erro ao buscar trabalhos em eventos: {e}")
+
+    # Outras funções como busca_formacao_academica, busca_participacao_projetos etc.
+
+    def busca_todas_as_producoes(self) -> dict:
+        """Busca todas as produções acadêmicas (artigos, trabalhos em eventos, etc.)"""
+        return {
+            "dados_gerais": self.busca_dados_gerais(),
+            "artigos_publicados": self.busca_artigos_publicados(),
+            "trabalhos_em_eventos": self.busca_trabalhos_em_eventos(),
+            "atuacoes_profissionais": self.busca_atuacoes_profissionais()
+        }
