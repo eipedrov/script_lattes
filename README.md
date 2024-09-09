@@ -59,7 +59,7 @@ Ative o ambiente virtual:
 
 No terminal, instale as bibliotecas necessárias:
 ```bash
-pip install lxml pandas
+pip install -r requirements.txt
 ```
 
 Verifique se as bibliotecas foram instaladas corretamente:
@@ -122,6 +122,6 @@ Este arquivo contém um resumo numérico das produções, como:
   - **Solução**: Certifique-se de que os arquivos XML são válidos e estão no formato correto.
 
 - **Problema**: O script não encontra o módulo `pandas` ou `lxml`.
-  - **Solução**: Verifique se você instalou as dependências corretamente com o comando `pip install lxml pandas`.
+  - **Solução**: Verifique se você instalou as dependências corretamente.
 
 
