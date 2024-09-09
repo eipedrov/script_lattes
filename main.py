@@ -1,11 +1,68 @@
-import sys
 import os
 import pandas as pd
-from processadorXmlLattes import ProcessadorXmlLattes
-from salvadorDadosLattes import SalvadorDadosLattes
+import json
+from processadorXmlLattes import ProcessadorXmlLattes  # Importa a classe que processa os arquivos XML
+
+def atualizar_planilha_dados_gerais(dados_novos, caminho_saida):
+    """Função para atualizar a planilha 'Dados Gerais' com dados quantitativos dos pesquisadores.
+    Se o pesquisador já existir na planilha, os valores serão atualizados."""
+    caminho_planilha = os.path.join(caminho_saida, 'Dados_gerais.xlsx')
+
+    # Se o arquivo já existir, carrega a planilha existente
+    if os.path.exists(caminho_planilha):
+        df_existente = pd.read_excel(caminho_planilha)
+        
+        # Verifica se o pesquisador já está na planilha
+        if dados_novos["Nome"] in df_existente["Nome"].values:
+            # Atualiza os valores do pesquisador
+            df_existente.loc[df_existente["Nome"] == dados_novos["Nome"], "Artigos Publicados"] = dados_novos["Artigos Publicados"]
+            df_existente.loc[df_existente["Nome"] == dados_novos["Nome"], "Trabalhos em Eventos"] = dados_novos["Trabalhos em Eventos"]
+        else:
+            # Adiciona um novo pesquisador
+            df_novo = pd.DataFrame([dados_novos])
+            df_existente = pd.concat([df_existente, df_novo], ignore_index=True)
+
+        df_existente.to_excel(caminho_planilha, index=False)
+    else:
+        # Se o arquivo não existir, cria uma nova planilha com o primeiro pesquisador
+        df_novo = pd.DataFrame([dados_novos])
+        df_novo.to_excel(caminho_planilha, index=False)
+
+    print(f"Planilha 'Dados Gerais' atualizada em: {caminho_planilha}")
+
+def salvar_dados_detalhados(dados_detalhados, caminho_saida, formato_saida):
+    """Função para salvar os dados detalhados de um pesquisador em JSON ou Excel com 3 abas no Excel"""
+    nome_arquivo = os.path.join(caminho_saida, dados_detalhados["Nome"].replace(" ", "_") + "_detalhado")
+
+    if formato_saida == 'json':
+        with open(nome_arquivo + '.json', 'w', encoding='utf-8') as f:
+            json.dump(dados_detalhados, f, ensure_ascii=False, indent=4)
+        print(f"Dados detalhados salvos em: {nome_arquivo}.json")
+
+    elif formato_saida == 'excel':
+        # Aba 1: Dados Gerais
+        df_dados_gerais = pd.DataFrame([{
+            "Nome": dados_detalhados["Nome"],
+            "Nacionalidade": dados_detalhados["Nacionalidade"],
+            "Resumo do CV": dados_detalhados["Resumo do CV"]
+        }])
+
+        # Aba 2: Artigos Publicados
+        df_artigos = pd.DataFrame(dados_detalhados["Artigos Publicados"])
+
+        # Aba 3: Trabalhos em Eventos
+        df_trabalhos_eventos = pd.DataFrame(dados_detalhados["Trabalhos em Eventos"])
+
+        # Escrevendo os dados em diferentes abas da planilha
+        with pd.ExcelWriter(nome_arquivo + '.xlsx', engine='openpyxl') as writer:
+            df_dados_gerais.to_excel(writer, sheet_name='Dados Gerais', index=False)
+            df_artigos.to_excel(writer, sheet_name='Artigos Publicados', index=False)
+            df_trabalhos_eventos.to_excel(writer, sheet_name='Trabalhos em Eventos', index=False)
+
+        print(f"Dados detalhados salvos em: {nome_arquivo}.xlsx")
 
 def processar_arquivo_xml(caminho_xml, formato_saida, caminho_saida, tipo_saida):
-    """Função para processar um único arquivo XML e salvar as saídas."""
+    """Função para processar um único arquivo XML e gerar os dados detalhados ou resumidos."""
     try:
         # Instancia a classe para processar o XML
         processador = ProcessadorXmlLattes(caminho_xml)
@@ -17,7 +74,9 @@ def processar_arquivo_xml(caminho_xml, formato_saida, caminho_saida, tipo_saida)
         
         # Organiza os dados detalhados
         dados_detalhados = {
-            "Dados Gerais": dados_gerais,
+            "Nome": dados_gerais["nome_completo"],
+            "Nacionalidade": dados_gerais["nacionalidade"],
+            "Resumo do CV": dados_gerais["resumo_cv"],
             "Artigos Publicados": artigos_publicados,
             "Trabalhos em Eventos": trabalhos_em_eventos
         }
@@ -29,71 +88,15 @@ def processar_arquivo_xml(caminho_xml, formato_saida, caminho_saida, tipo_saida)
             "Trabalhos em Eventos": len(trabalhos_em_eventos)
         }
 
-        # Instancia a classe para salvar os dados
-        salvador = SalvadorDadosLattes(dados_detalhados)
+        # Atualiza a planilha "Dados Gerais"
+        atualizar_planilha_dados_gerais(dados_numericos, caminho_saida)
 
-        # Verifica o tipo de saída e formato selecionados
+        # Gera os dados detalhados se necessário
         if tipo_saida == 'detalhado':
-            if formato_saida == 'json':
-                salvador.salvar_como_json(caminho_saida)
-            elif formato_saida == 'excel':
-                salvador.salvar_como_excel(caminho_saida)
-            else:
-                print("Formato de saída inválido. Escolha entre 'json' ou 'excel'.")
-        elif tipo_saida == 'resumo':
-            salvar_resumo_producao(caminho_saida, dados_numericos)
-        elif tipo_saida == 'ambos':
-            # Salva os dados detalhados
-            if formato_saida == 'json':
-                salvador.salvar_como_json(caminho_saida)
-            elif formato_saida == 'excel':
-                salvador.salvar_como_excel(caminho_saida)
-            
-            # Salva o resumo numérico
-            salvar_resumo_producao(caminho_saida, dados_numericos)
-        else:
-            print("Tipo de saída inválido. Escolha entre 'detalhado', 'resumo' ou 'ambos'.")
+            salvar_dados_detalhados(dados_detalhados, caminho_saida, formato_saida)
 
+        print("Dados gerais e detalhados processados com sucesso!")
+        
     except ValueError as e:
         print(f"Erro: {e}")
         sys.exit(1)
-
-def processar_pasta(caminho_pasta, formato_saida, caminho_saida, tipo_saida):
-    """Função para processar todos os arquivos XML em uma pasta."""
-    for arquivo in os.listdir(caminho_pasta):
-        if arquivo.endswith(".xml"):
-            caminho_xml = os.path.join(caminho_pasta, arquivo)
-            nome_arquivo = os.path.splitext(arquivo)[0]
-            print(f"Processando arquivo: {caminho_xml}")
-            caminho_saida_atual = os.path.join(caminho_saida, nome_arquivo)
-            processar_arquivo_xml(caminho_xml, formato_saida, caminho_saida_atual, tipo_saida)
-
-def salvar_resumo_producao(caminho_saida, dados_numericos):
-    """Função para salvar ou atualizar uma planilha com o resumo numérico das produções"""
-    caminho_planilha = caminho_saida + '_resumo.xlsx'
-    nova_linha = pd.DataFrame([dados_numericos])
-    
-    if os.path.exists(caminho_planilha):
-        # Se a planilha já existe, atualiza ela
-        df_existente = pd.read_excel(caminho_planilha)
-        df_atualizado = pd.concat([df_existente, nova_linha], ignore_index=True)
-        df_atualizado.to_excel(caminho_planilha, index=False)
-    else:
-        # Se a planilha não existe, cria ela
-        nova_linha.to_excel(caminho_planilha, index=False)
-
-    print(f"Resumo numérico salvo/atualizado em {caminho_planilha}")
-
-if __name__ == "__main__":
-    # Verifica se os argumentos necessários foram passados
-    if len(sys.argv) != 5:
-        print("Uso: python main.py <caminho_da_pasta> <formato_saida> <caminho_saida> <tipo_saida>")
-        sys.exit(1)
-
-    caminho_pasta = sys.argv[1]
-    formato_saida = sys.argv[2]
-    caminho_saida = sys.argv[3]
-    tipo_saida = sys.argv[4]
-
-    # Chama a função para processar todos os arquivos XML da pasta
-    processar_pasta(caminho_pasta, formato_saida, caminho_saida, tipo_saida)
