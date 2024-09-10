@@ -1,7 +1,3 @@
-Aqui está o **README** atualizado com as modificações mais recentes, incluindo as novas funcionalidades da interface gráfica e a remoção da opção "ambos". O arquivo agora inclui todas as mudanças que fizemos no projeto.
-
----
-
 # Projeto: Processamento de Currículos Lattes com Extração de Dados e Geração de Planilhas
 
 Este projeto tem como objetivo processar currículos Lattes em formato XML, extraindo dados detalhados e numéricos sobre a produção acadêmica de pesquisadores. Os dados extraídos podem ser salvos em formatos **JSON** ou **Excel**, e há a opção de gerar tanto um arquivo detalhado quanto um resumo numérico das produções, que pode ser atualizado em uma planilha geral.
