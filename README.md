@@ -154,8 +154,6 @@ Este arquivo contém um resumo numérico das produções, como:
 
 - **Problema**: O arquivo Excel gerado não contém dados.
   - **Solução**: Certifique-se de que os arquivos XML são válidos e estão no formato correto.
-
+ 
 - **Problema**: O script não encontra o módulo `pandas`, `lxml` ou `openpyxl`.
   - **Solução**: Verifique se você instalou as dependências corretamente.
-
----
