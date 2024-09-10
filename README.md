@@ -1,3 +1,6 @@
+Aqui está o **README** atualizado com as modificações mais recentes, incluindo as novas funcionalidades da interface gráfica e a remoção da opção "ambos". O arquivo agora inclui todas as mudanças que fizemos no projeto.
+
+---
 
 # Projeto: Processamento de Currículos Lattes com Extração de Dados e Geração de Planilhas
 
@@ -13,6 +16,7 @@ Este projeto tem como objetivo processar currículos Lattes em formato XML, extr
 - Gera um resumo numérico das produções acadêmicas do pesquisador.
 - Suporte para processar múltiplos arquivos XML de uma pasta automaticamente.
 - Atualiza uma planilha geral com o resumo numérico das produções.
+- Interface gráfica para facilitar o uso do sistema, permitindo a seleção de arquivos, formatos de saída e opções de geração de relatórios.
 
 ## Tecnologias Utilizadas
 
@@ -22,6 +26,8 @@ Este projeto tem como objetivo processar currículos Lattes em formato XML, extr
 ### Bibliotecas:
 - **lxml**: Para processar e extrair dados de arquivos XML.
 - **pandas**: Para manipulação de dados e geração de arquivos Excel.
+- **openpyxl**: Para trabalhar com planilhas Excel, incluindo a criação de várias abas em um arquivo.
+- **tkinter**: Para criar a interface gráfica do usuário (GUI).
 - **json**: Para manipulação de arquivos JSON.
 - **os**: Para manipulação de arquivos e diretórios.
 - **sys**: Para tratar argumentos de linha de comando.
@@ -71,6 +77,35 @@ pip list
 - **main.py**: Script principal que processa os arquivos XML e gera as saídas.
 - **processadorXmlLattes.py**: Contém a classe `ProcessadorXmlLattes`, responsável por processar e extrair dados dos currículos XML.
 - **salvadorDadosLattes.py**: Contém a classe `SalvadorDadosLattes`, responsável por salvar os dados extraídos nos formatos **JSON** e **Excel**.
+- **interface.py**: Contém a interface gráfica que permite a interação do usuário com o sistema, sem a necessidade de usar linha de comando.
+
+## Interface Gráfica (GUI)
+
+Foi adicionada uma interface gráfica ao projeto para simplificar o uso do sistema. Desenvolvida com **Tkinter** e **ttk**, ela oferece uma forma amigável para os usuários processarem os arquivos XML e gerarem os relatórios de forma interativa.
+
+### Principais Funcionalidades:
+1. **Seleção de Arquivo XML**:
+   - O usuário pode selecionar o arquivo XML através de um explorador de arquivos.
+   
+2. **Seleção da Pasta de Destino**:
+   - O usuário define onde os arquivos gerados (JSON/Excel) serão salvos.
+
+3. **Escolha do Formato de Saída**:
+   - O usuário escolhe entre **Excel** ou **JSON** para os arquivos gerados.
+
+4. **Escolha do Tipo de Geração**:
+   - **Detalhado**: Gera um arquivo detalhado para o pesquisador com várias abas:
+     - **Dados Gerais**: Nome, nacionalidade e resumo do CV.
+     - **Artigos Publicados**: Detalhes dos artigos publicados.
+     - **Trabalhos em Eventos**: Detalhes dos trabalhos apresentados em eventos.
+   - **Resumo**: Atualiza a planilha "Dados Gerais", com a quantidade de artigos publicados e trabalhos apresentados para cada pesquisador, evitando duplicidade de nomes.
+
+### Como Executar a Interface Gráfica:
+```bash
+python interface.py
+```
+
+A interface irá abrir e permitirá que você selecione arquivos e defina suas preferências.
 
 ## Como Rodar o Projeto
 
@@ -86,33 +121,32 @@ python main.py <caminho_da_pasta_xml> <formato_saida> <caminho_saida> <tipo_said
 - `<tipo_saida>`: Define o tipo de saída que será gerado:
   - `detalhado`: Gera uma planilha com todos os dados detalhados do pesquisador.
   - `resumo`: Gera uma planilha apenas com o resumo numérico das produções do pesquisador.
-  - `ambos`: Gera tanto o arquivo detalhado quanto o resumo numérico.
 
 ### Exemplo:
 ```bash
-python main.py ./xmls excel ./resultados ambos
+python main.py ./xmls excel ./resultados detalhado
 ```
 
-Esse comando processará todos os arquivos XML na pasta `./xmls`, gerará saídas no formato Excel na pasta `./resultados`, e criará tanto o arquivo detalhado quanto o resumo numérico.
+Esse comando processará o arquivo XML na pasta `./xmls`, gerará saídas no formato Excel na pasta `./resultados`, e criará tanto o arquivo detalhado quanto o resumo numérico.
 
 ### Rodando para Múltiplos XMLs
 Se você deseja processar todos os arquivos XML dentro de uma pasta, o script também oferece suporte para isso. Basta especificar a pasta onde os XMLs estão localizados e o script irá processar cada arquivo individualmente.
 
 ### Planilha Resumo
-Caso o modo **resumo** ou **ambos** seja utilizado, o script atualizará uma planilha Excel com o resumo numérico das produções de cada pesquisador.
+Caso o modo **resumo** seja utilizado, o script atualizará uma planilha Excel com o resumo numérico das produções de cada pesquisador.
 
 ## Estrutura de Saída
 
 ### Arquivo Detalhado:
-Este arquivo contém informações detalhadas do pesquisador, tais como:
-- Dados gerais
-- Artigos publicados
-- Trabalhos em eventos
+Este arquivo contém informações detalhadas do pesquisador, organizadas em três abas:
+- **Dados Gerais**: Nome, nacionalidade, resumo do CV.
+- **Artigos Publicados**: Informações detalhadas sobre os artigos publicados.
+- **Trabalhos em Eventos**: Informações detalhadas sobre os trabalhos apresentados em eventos.
 
 ### Arquivo de Resumo:
 Este arquivo contém um resumo numérico das produções, como:
-- Número de artigos publicados
-- Número de trabalhos apresentados em eventos
+- Número de artigos publicados.
+- Número de trabalhos apresentados em eventos.
 
 ---
 
@@ -120,8 +154,6 @@ Este arquivo contém um resumo numérico das produções, como:
 
 - **Problema**: O arquivo Excel gerado não contém dados.
   - **Solução**: Certifique-se de que os arquivos XML são válidos e estão no formato correto.
-
-- **Problema**: O script não encontra o módulo `pandas` ou `lxml`.
+ 
+- **Problema**: O script não encontra o módulo `pandas`, `lxml` ou `openpyxl`.
   - **Solução**: Verifique se você instalou as dependências corretamente.
-
-
