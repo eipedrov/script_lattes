@@ -1,2 +1,4 @@
 lxml==5.2.2
 pandas==2.2.2
+openpyxl==3.0.10
+# Tkinter (instalar manualmente se necessário, especialmente no Linux)
